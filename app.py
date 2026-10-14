@@ -24,7 +24,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-CATEGORIES = ["Street Light", "Water Supply", "Road Damage", "Garbage", "Drainage", "Other"]
+CATEGORIES = ["Street Light", "Water Supply", "Road Damage", "Garbage", "Drainage", "Manhole", "Other"]
 STATUSES = ["Pending", "In Progress", "Completed"]
 
 
@@ -67,6 +67,7 @@ def init_db():
             image_path TEXT DEFAULT '',
             latitude REAL DEFAULT NULL,
             longitude REAL DEFAULT NULL,
+            other_detail TEXT DEFAULT '',
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             FOREIGN KEY (citizen_id) REFERENCES users(id)
@@ -80,6 +81,8 @@ def init_db():
         db.execute("ALTER TABLE complaints ADD COLUMN latitude REAL DEFAULT NULL")
     if "longitude" not in cols:
         db.execute("ALTER TABLE complaints ADD COLUMN longitude REAL DEFAULT NULL")
+    if "other_detail" not in cols:
+        db.execute("ALTER TABLE complaints ADD COLUMN other_detail TEXT DEFAULT ''")
     db.execute("""
         CREATE TABLE IF NOT EXISTS esp_devices (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,6 +143,11 @@ AI_CAUSES = {
         "Silt/choke point downstream; same drain overflows after every rain.",
         "Broken slab cover lets silt in, blocking flow repeatedly.",
     ],
+    "Manhole": [
+        "Loose / broken cover reseats poorly and rattles open again under traffic.",
+        "Sunken frame + weak surround lets the same cover sink after each repair.",
+        "Gas / silt pressure pops the same lid after every rain.",
+    ],
     "Other": [
         "Same unresolved root cause keeps retriggering complaints here.",
     ],
@@ -151,6 +159,7 @@ AI_FIX = {
     "Road Damage": "Full patch with compaction + resurfacing, fix drainage alongside.",
     "Garbage": "Fix a marked bin point + daily pickup slot for this spot.",
     "Drainage": "Desilt full stretch + repair cover/slope so flow clears.",
+    "Manhole": "Reset frame with concrete surround, fit heavy-duty cover, check level after compaction.",
     "Other": "Field visit to find the repeating trigger and fix permanently.",
 }
 
@@ -355,12 +364,21 @@ def new_complaint():
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
         area = request.form.get("area", "").strip()
+        other_detail = request.form.get("other_detail", "").strip()
         lat_raw = request.form.get("latitude", "").strip()
         lng_raw = request.form.get("longitude", "").strip()
 
         if category not in CATEGORIES:
             flash("Please select a valid category.", "danger")
             return render_template("new_complaint.html", categories=CATEGORIES)
+        if category == "Other":
+            if not other_detail:
+                flash("Please specify what the 'Other' issue is.", "danger")
+                return render_template("new_complaint.html", categories=CATEGORIES)
+            if len(other_detail) > 80:
+                other_detail = other_detail[:80]
+        else:
+            other_detail = ""
         if not title or not description or not area:
             flash("Title, description and area are required.", "danger")
             return render_template("new_complaint.html", categories=CATEGORIES)
@@ -387,9 +405,9 @@ def new_complaint():
         db = get_db()
         db.execute(
             """INSERT INTO complaints
-               (citizen_id, category, title, description, area, status, remark, image_path, latitude, longitude, created_at, updated_at)
-               VALUES (?,?,?,?,?,'Pending','',?,?,?, ?,?)""",
-            (session["user_id"], category, title, description, area, image_path, latitude, longitude, now, now),
+               (citizen_id, category, title, description, area, status, remark, image_path, latitude, longitude, other_detail, created_at, updated_at)
+               VALUES (?,?,?,?,?,'Pending','',?,?,?, ?, ?,?)""",
+            (session["user_id"], category, title, description, area, image_path, latitude, longitude, other_detail, now, now),
         )
         db.commit()
         flash("Complaint submitted successfully with photo & location!", "success")

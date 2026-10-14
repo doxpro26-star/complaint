@@ -36,7 +36,7 @@
 {% for c in complaints %}
 <tr>
   <td>#{{ c['id'] }}</td>
-  <td>{{ c['category'] }}</td>
+  <td>{{ c['category'] }}{% if c['category']=='Other' and c['other_detail'] %}<br><span class="muted">{{ c['other_detail'] }}</span>{% endif %}</td>
   <td>{{ c['title'] }} {% if c['image_path'] %}📷{% endif %}{% if c['latitude'] %}📍{% endif %}</td>
   <td>{{ c['citizen_name'] }}</td>
   <td>{{ c['area'] }}</td>

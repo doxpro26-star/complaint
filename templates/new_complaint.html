@@ -7,11 +7,15 @@
 <p class="muted">Snap a photo, capture live location, engineer sees it instantly.</p>
 <form method="POST" enctype="multipart/form-data">
   <label>Category</label>
-  <select name="category" required>
+  <select name="category" id="catSelect" required onchange="toggleOther()">
     {% for cat in categories %}
     <option value="{{ cat }}">{{ cat }}</option>
     {% endfor %}
   </select>
+  <div id="otherBox" style="display:none">
+    <label>Specify — what is this Other issue? *</label>
+    <input name="other_detail" id="otherInput" placeholder="e.g. Open manhole wire, fallen tree, stray animals…" maxlength="80">
+  </div>
   <label>Title</label>
   <input name="title" required placeholder="e.g. Street light not working near bus stop">
   <label>Area / Location (text)</label>
@@ -41,6 +45,15 @@
 <p style="margin-top:12px"><a href="{{ url_for('citizen_dashboard') }}">← Back</a></p>
 </div>
 <script>
+// Show blank textbox when Other is chosen
+function toggleOther(){
+  const v = document.getElementById('catSelect').value;
+  const box = document.getElementById('otherBox');
+  const inp = document.getElementById('otherInput');
+  if(v === 'Other'){ box.style.display = 'block'; inp.required = true; }
+  else { box.style.display = 'none'; inp.required = false; inp.value = ''; }
+}
+toggleOther();
 // Photo preview
 document.getElementById('photoInput').addEventListener('change', function(e){
   const f = e.target.files[0];

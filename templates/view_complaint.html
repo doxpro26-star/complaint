@@ -5,9 +5,12 @@
   <p class="eyebrow" style="justify-content:flex-start">{{ c['category'] }} · <b>&nbsp;#{{ c['id'] }}</b></p>
   <h2 style="margin:8px 0">{{ c['title'] }}</h2>
   <p><span class="badge {{ c['status']|lower|replace(' ','-') }}">{{ c['status'] }}</span>
-     <span class="chip">{{ c['category'] }}</span>
+     <span class="chip">{{ c['category'] }}{% if c['category']=='Other' and c['other_detail'] %}: {{ c['other_detail'] }}{% endif %}</span>
      {% if c['image_path'] %}<span class="chip">📷 photo</span>{% endif %}
      {% if c['latitude'] %}<span class="chip">📍 GPS</span>{% endif %}</p>
+  {% if c['category']=='Other' and c['other_detail'] %}
+  <p style="margin-top:8px"><b>Specified issue:</b> {{ c['other_detail'] }}</p>
+  {% endif %}
   <p style="margin-top:10px"><b>Area:</b> {{ c['area'] }}</p>
   <p style="margin-top:6px"><b>Description:</b><br>{{ c['description'] }}</p>
 
