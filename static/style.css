@@ -189,9 +189,57 @@ footer{text-align:center;padding:28px 16px 40px;color:var(--ink-3);font-size:13p
 .how3{max-width:936px;margin:0 auto;padding:34px 16px 10px;text-align:center}
 .how3 h2{font-size:32px;letter-spacing:-.02em;margin-bottom:8px}
 .how3 p.sub{color:var(--ink-2)}
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:13px;border:1px solid var(--line);background:#fff}
+.table-wrap table{border:none;border-radius:0}
+img{height:auto}
+iframe{max-width:100%}
+
+/* ---------- mobile responsive ---------- */
 @media (max-width:700px){
-  .stage h1{font-size:40px;line-height:46px}
-  .aw-grid{flex-direction:column}
-  .aw-stats{gap:20px}
-  .page-wrap{padding-top:100px}
+  .pillnav{top:12px;gap:8px;padding:0 6px 0 8px;height:40px;max-width:calc(100% - 16px);scrollbar-width:none}
+  .pillnav::-webkit-scrollbar{display:none}
+  .pillnav a{font-size:13px}
+  .pillnav .user-pill{max-width:110px;overflow:hidden;text-overflow:ellipsis}
+  .page-wrap{padding:92px 12px 30px}
+  .stage{padding:118px 16px 38px}
+  .stage h1{font-size:32px;line-height:38px;letter-spacing:-.02em}
+  .lede{font-size:15px;line-height:22px}
+  .cta{gap:10px}
+  .cta .btn{flex:1 1 100%;min-height:44px;font-size:15px}
+  .fineprint{font-size:12px}
+  .showcase{padding:40px 10px 50px}
+  .aw-card{padding:16px 14px 18px;border-radius:12px}
+  .aw-top{flex-wrap:wrap}
+  .aw-top .wsp{font-size:15px}
+  .aw-chip{height:32px;font-size:12px}
+  .aw-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0 4px}
+  .aw-stat .v{font-size:20px}
+  .aw-chart{margin:10px -14px 0}
+  .aw-chart svg{height:130px}
+  .aw-grid{flex-direction:column;gap:12px;margin-top:14px}
+  .toolbar{font-size:11px;gap:8px;max-width:calc(100% - 8px);overflow-x:auto;scrollbar-width:none}
+  .topbar h2{font-size:22px}
+  .topbar .btn{width:100%;min-height:44px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .stat{min-width:0;padding:10px 6px;font-size:12px}
+  .stat b{font-size:18px}
+  table{font-size:13px}
+  th,td{padding:9px 8px;white-space:nowrap}
+  th:nth-child(3),td:nth-child(3){white-space:normal;min-width:140px}
+  .form-box{padding:18px 14px;margin:6px auto;max-width:100%}
+  .form-box h2{font-size:22px}
+  .form-box input,.form-box select,.form-box textarea{font-size:16px;min-height:44px}
+  .filters-form select{flex:1;min-height:44px;font-size:14px}
+  .chip{font-size:12px}
+  .grid3{grid-template-columns:1fr}
+  .how3 h2{font-size:24px}
+  .card{padding:14px}
+  .detail{max-width:100%}
+  .esp-form{grid-template-columns:1fr !important}
+}
+@media (max-width:380px){
+  .stage h1{font-size:28px;line-height:34px}
+  .aw-stats{grid-template-columns:1fr 1fr;gap:12px}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat:last-child{grid-column:1/-1}
 }

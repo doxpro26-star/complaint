@@ -12,7 +12,7 @@
 
 <div class="form-box" style="max-width:100%">
   <h3 style="margin:0 0 6px">+ Add ESP32</h3>
-  <form method="POST" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <form method="POST" class="esp-form" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div>
       <label>Name</label>
       <input name="name" placeholder="e.g. Sector 5 Pole Controller" required>
@@ -34,7 +34,8 @@
 </div>
 
 {% if devices %}
-<table style="margin-top:14px">
+<div class="table-wrap">
+<table style="margin-top:0">
 <tr><th>#</th><th>Name</th><th>IP</th><th>Area</th><th>Webserver</th><th></th></tr>
 {% for d in devices %}
 <tr>
@@ -54,6 +55,7 @@
 </tr>
 {% endfor %}
 </table>
+</div>
 {% else %}
 <div class="card" style="margin-top:14px"><p>No ESP32 saved yet. Paste the IP from Serial Monitor above.</p></div>
 {% endif %}

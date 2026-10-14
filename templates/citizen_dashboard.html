@@ -20,6 +20,7 @@
   {% endfor %}
 </div>
 {% if complaints %}
+<div class="table-wrap">
 <table>
 <tr><th>ID</th><th>Category</th><th>Title</th><th>Area</th><th>Status</th><th>Date</th><th></th></tr>
 {% for c in complaints %}
@@ -34,6 +35,7 @@
 </tr>
 {% endfor %}
 </table>
+</div>
 {% else %}
 <div class="card"><p>No complaints yet. Click <b>+ New Complaint</b> — e.g. light not working in your street.</p></div>
 {% endif %}

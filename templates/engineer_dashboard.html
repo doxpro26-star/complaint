@@ -31,6 +31,7 @@
   </select>
 </form>
 {% if complaints %}
+<div class="table-wrap">
 <table>
 <tr><th>ID</th><th>Category</th><th>Title</th><th>Citizen</th><th>Area</th><th>Status</th><th></th></tr>
 {% for c in complaints %}
@@ -45,6 +46,7 @@
 </tr>
 {% endfor %}
 </table>
+</div>
 {% else %}
 <div class="card"><p>Quiet for now — no complaints in this filter.</p></div>
 {% endif %}
