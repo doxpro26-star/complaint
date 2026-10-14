@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "complaint-system-secret-key-change-this"
+app.secret_key = os.environ.get("SECRET_KEY", "complaint-system-secret-key-change-this")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE = os.path.join(BASE_DIR, "complaints.db")
@@ -312,7 +312,20 @@ def engineer_view_complaint(cid):
     return render_template("view_complaint.html", c=c, is_engineer=True, statuses=STATUSES)
 
 
+@app.route("/healthz")
+def healthz():
+    return "ok", 200
+
+
 if __name__ == "__main__":
     init_db()
-    print("Database ready. Open http://127.0.0.1:5000")
-    app.run(debug=True, host="127.0.0.1", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "0") == "1"
+    print(f"Database ready. Open http://0.0.0.0:{port}")
+    app.run(debug=debug, host="0.0.0.0", port=port)
+else:
+    # Gunicorn / Render: ensure DB exists on worker boot
+    try:
+        init_db()
+    except Exception as e:
+        print(f"DB init skipped: {e}")
