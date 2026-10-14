@@ -21,18 +21,18 @@
   <label>Area / Location (text)</label>
   <input name="area" id="areaInput" required placeholder="e.g. Sector 5, MG Road, Ward 12">
 
-  <label>📷 Photo proof (upload or take photo)</label>
+  <label>Photo evidence (upload or take photo)</label>
   <input type="file" name="photo" id="photoInput" accept="image/*" capture="environment">
   <p class="muted">On mobile this opens camera directly. Max 5 MB (png/jpg/webp).</p>
   <img id="photoPreview" style="display:none;max-width:100%;border-radius:11px;margin-top:8px;border:1px solid var(--line)">
 
-  <label>📍 Real-time location</label>
+  <label>Real-time location</label>
   <div class="card" style="padding:12px">
     <p class="muted" id="locStatus">Not captured yet. Tap below.</p>
     <p id="locText" style="font-weight:600"></p>
     <a id="locMapLink" href="#" target="_blank" style="display:none;color:var(--accent);font-weight:600">Open in Google Maps ›</a>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button type="button" class="btn btn-quiet" onclick="captureLocation()">📍 Use my live location</button>
+      <button type="button" class="btn btn-quiet" onclick="captureLocation()">Use my live location</button>
     </div>
   </div>
   <input type="hidden" name="latitude" id="latInput">
@@ -72,14 +72,14 @@ function captureLocation(){
     const lng = pos.coords.longitude.toFixed(6);
     document.getElementById('latInput').value = lat;
     document.getElementById('lngInput').value = lng;
-    document.getElementById('locText').textContent = '📌 ' + lat + ', ' + lng + ' (±' + Math.round(pos.coords.accuracy) + 'm)';
-    st.textContent = '✅ Live location captured!';
+    document.getElementById('locText').textContent = lat + ', ' + lng + ' (accuracy ±' + Math.round(pos.coords.accuracy) + 'm)';
+    st.textContent = 'Location captured.';
     st.style.color = 'var(--pos)';
     const link = document.getElementById('locMapLink');
     link.href = 'https://www.google.com/maps?q=' + lat + ',' + lng;
     link.style.display = 'inline';
   }, function(err){
-    st.textContent = '❌ ' + err.message + ' — you can still submit without GPS.';
+    st.textContent = 'Location error: ' + err.message + ' — you can still submit without GPS.';
   }, {enableHighAccuracy:true, timeout:10000});
 }
 </script>

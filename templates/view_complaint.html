@@ -6,8 +6,8 @@
   <h2 style="margin:8px 0">{{ c['title'] }}</h2>
   <p><span class="badge {{ c['status']|lower|replace(' ','-') }}">{{ c['status'] }}</span>
      <span class="chip">{{ c['category'] }}{% if c['category']=='Other' and c['other_detail'] %}: {{ c['other_detail'] }}{% endif %}</span>
-     {% if c['image_path'] %}<span class="chip">📷 photo</span>{% endif %}
-     {% if c['latitude'] %}<span class="chip">📍 GPS</span>{% endif %}</p>
+     {% if c['image_path'] %}<span class="chip">Photo attached</span>{% endif %}
+     {% if c['latitude'] %}<span class="chip">GPS attached</span>{% endif %}</p>
   {% if c['category']=='Other' and c['other_detail'] %}
   <p style="margin-top:8px"><b>Specified issue:</b> {{ c['other_detail'] }}</p>
   {% endif %}
@@ -16,14 +16,14 @@
 
   {% if c['image_path'] %}
   <div style="margin-top:12px">
-    <b>📷 Photo proof:</b><br>
+    <b>Photo evidence:</b><br>
     <img src="{{ url_for('static', filename=c['image_path']) }}" style="max-width:100%;border-radius:13px;margin-top:8px;border:1px solid var(--line)">
   </div>
   {% endif %}
 
   {% if c['latitude'] and c['longitude'] %}
   <div style="margin-top:12px">
-    <b>📍 Live location:</b> {{ c['latitude'] }}, {{ c['longitude'] }}
+    <b>Live location:</b> {{ c['latitude'] }}, {{ c['longitude'] }}
     <br><a href="https://www.google.com/maps?q={{ c['latitude'] }},{{ c['longitude'] }}" target="_blank" style="color:var(--accent);font-weight:600">Open in Google Maps ›</a>
     <iframe width="100%" height="220" style="border:1px solid var(--line);border-radius:13px;margin-top:8px"
       src="https://maps.google.com/maps?q={{ c['latitude'] }},{{ c['longitude'] }}&z=16&output=embed"></iframe>
@@ -35,16 +35,16 @@
   <p class="muted" style="margin-top:8px">Raised by {{ c['citizen_name'] }} on {{ c['created_at'] }} · Updated {{ c['updated_at'] }}</p>
 
   <div class="remark-box">
-    <b>👷 Engineer Remark:</b>
+    <b>Engineer Remark:</b>
     <p>{{ c['remark'] if c['remark'] else 'No remark yet — engineer will explain why this happened here.' }}</p>
   </div>
 
   {% if ai %}
   <div class="card" style="margin-top:12px;border-left:4px solid {% if ai.hotspot %}#c0533c{% else %}var(--accent){% endif %}">
-    <b>🤖 AI Insight — why this occurs{% if ai.total_repeat %} ({{ ai.total_repeat + 1 }}× here){% endif %}:</b>
+    <b>Repeat Analysis — why this occurs{% if ai.total_repeat %} ({{ ai.total_repeat + 1 }}× here){% endif %}:</b>
     <p style="margin-top:6px">{{ ai.why }}</p>
     <p class="muted">Same-area repeats: {{ ai.same_area }} · Nearby GPS (≤500m): {{ ai.nearby }}</p>
-    <p style="margin-top:6px"><b>✅ Suggested permanent fix:</b> {{ ai.fix }}</p>
+    <p style="margin-top:6px"><b>Recommended permanent fix:</b> {{ ai.fix }}</p>
     {% if ai.hotspot and is_engineer %}
     <p style="margin-top:6px"><a href="{{ url_for('engineer_insights') }}" style="color:var(--accent);font-weight:600">View all hotspots ›</a></p>
     {% endif %}

@@ -27,7 +27,7 @@
 <tr>
   <td>#{{ c['id'] }}</td>
   <td>{{ c['category'] }}{% if c['category']=='Other' and c['other_detail'] %}<br><span class="muted">{{ c['other_detail'] }}</span>{% endif %}</td>
-  <td>{{ c['title'] }} {% if c['image_path'] %}📷{% endif %}{% if c['latitude'] %}📍{% endif %}</td>
+  <td>{{ c['title'] }} {% if c['image_path'] %}<span class="muted">[Photo]</span>{% endif %}{% if c['latitude'] %}<span class="muted">[GPS]</span>{% endif %}</td>
   <td>{{ c['area'] }}</td>
   <td><span class="badge {{ c['status']|lower|replace(' ','-') }}">{{ c['status'] }}</span></td>
   <td class="muted">{{ c['created_at'][:10] }}</td>
