@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Repeat Hotspots — AI Insights{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <p class="eyebrow" style="justify-content:flex-start">Engineer · <b>&nbsp;AI insights</b></p>
+    <h2>🤖 Repeat Hotspots</h2>
+    <p class="muted">Same / nearby location reported often → likely repeating root cause + permanent fix.</p>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a href="{{ url_for('esp_devices') }}" class="btn btn-quiet">🔌 ESP32</a>
+    <a href="{{ url_for('engineer_dashboard') }}" class="btn btn-quiet">← Complaints</a>
+  </div>
+</div>
+
+{% if spots %}
+{% for s in spots %}
+<div class="card" style="margin-top:12px;border-left:4px solid #c0533c">
+  <h3 style="margin:0">🔥 {{ s.category }} — {{ s.area }} ({{ s.count }}×)</h3>
+  <p class="muted">IDs: {% for i in s.ids %}#{{ i }} {% endfor %} · latest {{ s.latest[:10] }}</p>
+  <p style="margin-top:8px"><b>Why every time:</b> {{ s.why }}</p>
+  <p style="margin-top:6px"><b>✅ Permanent fix:</b> {{ s.fix }}</p>
+</div>
+{% endfor %}
+{% else %}
+<div class="card" style="margin-top:14px"><p>No repeat hotspots yet. A hotspot appears when 2+ complaints share the same area + category.</p></div>
+{% endif %}
+{% endblock %}

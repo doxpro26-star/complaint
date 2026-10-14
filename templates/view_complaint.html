@@ -36,6 +36,18 @@
     <p>{{ c['remark'] if c['remark'] else 'No remark yet — engineer will explain why this happened here.' }}</p>
   </div>
 
+  {% if ai %}
+  <div class="card" style="margin-top:12px;border-left:4px solid {% if ai.hotspot %}#c0533c{% else %}var(--accent){% endif %}">
+    <b>🤖 AI Insight — why this occurs{% if ai.total_repeat %} ({{ ai.total_repeat + 1 }}× here){% endif %}:</b>
+    <p style="margin-top:6px">{{ ai.why }}</p>
+    <p class="muted">Same-area repeats: {{ ai.same_area }} · Nearby GPS (≤500m): {{ ai.nearby }}</p>
+    <p style="margin-top:6px"><b>✅ Suggested permanent fix:</b> {{ ai.fix }}</p>
+    {% if ai.hotspot and is_engineer %}
+    <p style="margin-top:6px"><a href="{{ url_for('engineer_insights') }}" style="color:var(--accent);font-weight:600">View all hotspots ›</a></p>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {% if is_engineer %}
   <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
   <h3>Update status & remark</h3>

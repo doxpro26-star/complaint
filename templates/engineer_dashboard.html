@@ -6,7 +6,10 @@
     <p class="eyebrow" style="justify-content:flex-start">Engineer · <b>&nbsp;{{ total }} total</b></p>
     <h2>All Complaints</h2>
   </div>
-  <a href="{{ url_for('esp_devices') }}" class="btn btn-primary">🔌 ESP32 Devices</a>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="{{ url_for('engineer_insights') }}" class="btn btn-quiet">🤖 Hotspots</a>
+    <a href="{{ url_for('esp_devices') }}" class="btn btn-primary">🔌 ESP32 Devices</a>
+  </div>
 </div>
 <div class="stats">
   <div class="stat pending">Pending<b>{{ counts.get('Pending',0) }}</b></div>

@@ -98,6 +98,115 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# ---------- AI: repeat-location insight (rule-based, no API key needed) ----------
+import math
+import re as _re
+
+def normalize_area(s):
+    s = (s or "").lower().strip()
+    s = _re.sub(r"\s+", " ", s)
+    return s
+
+def haversine_km(lat1, lon1, lat2, lon2):
+    try:
+        R = 6371.0
+        p1, p2 = math.radians(lat1), math.radians(lat2)
+        dphi = math.radians(lat2 - lat1)
+        dl = math.radians(lon2 - lon1)
+        a = math.sin(dphi/2)**2 + math.cos(p1)*math.cos(p2)*math.sin(dl/2)**2
+        return 2 * R * math.asin(math.sqrt(a))
+    except Exception:
+        return None
+
+AI_CAUSES = {
+    "Street Light": [
+        "Voltage fluctuation / loose neutral in this lane fuses bulbs repeatedly.",
+        "Aged fitting or water ingress in the pole cap causes frequent failure.",
+        "Same faulty batch of bulbs or timer/sensor misconfigured for this stretch.",
+    ],
+    "Water Supply": [
+        "Leak-prone joint or low-pressure zone; repeated pipe choking in this lane.",
+        "Valve leakage upstream causes recurring shortage at this point.",
+    ],
+    "Road Damage": [
+        "Water stagnation + heavy vehicle load re-opens the same pothole.",
+        "Weak sub-base; patch without resurfacing fails again within weeks.",
+    ],
+    "Garbage": [
+        "No fixed pickup point here, so waste piles up again after clearing.",
+        "Nearby shop/market waste dumped at same spot daily.",
+    ],
+    "Drainage": [
+        "Silt/choke point downstream; same drain overflows after every rain.",
+        "Broken slab cover lets silt in, blocking flow repeatedly.",
+    ],
+    "Other": [
+        "Same unresolved root cause keeps retriggering complaints here.",
+    ],
+}
+
+AI_FIX = {
+    "Street Light": "Check pole wiring + voltage, replace fitting (not just bulb), seal cap, verify timer/sensor.",
+    "Water Supply": "Inspect upstream valve + joints; flush line and fix leak point permanently.",
+    "Road Damage": "Full patch with compaction + resurfacing, fix drainage alongside.",
+    "Garbage": "Fix a marked bin point + daily pickup slot for this spot.",
+    "Drainage": "Desilt full stretch + repair cover/slope so flow clears.",
+    "Other": "Field visit to find the repeating trigger and fix permanently.",
+}
+
+def ai_repeat_insight(db, complaint, radius_km=0.5):
+    """Return dict: same_area_count, nearby_count, total_repeat, why, fix, hotspot(bool)."""
+    cat = complaint["category"]
+    area_norm = normalize_area(complaint["area"])
+    cid = complaint["id"]
+    rows = db.execute("SELECT id, area, latitude, longitude, category FROM complaints WHERE category=?", (cat,)).fetchall()
+    same_area = 0
+    nearby = 0
+    for r in rows:
+        if r["id"] == cid:
+            continue
+        if normalize_area(r["area"]) == area_norm:
+            same_area += 1
+        if complaint["latitude"] and complaint["longitude"] and r["latitude"] and r["longitude"]:
+            d = haversine_km(complaint["latitude"], complaint["longitude"], r["latitude"], r["longitude"])
+            if d is not None and d <= radius_km:
+                nearby += 1
+    total = same_area + nearby
+    # nearby-only complaints double counted if both same area+nearby; dedupe approx:
+    total = max(same_area, nearby) if (same_area and nearby) else same_area + nearby
+    causes = AI_CAUSES.get(cat, AI_CAUSES["Other"])
+    idx = min(total, len(causes) - 1) if total else 0
+    hotspot = total >= 2  # 3rd complaint onward = hotspot
+    if total == 0:
+        why = "First report from this spot. No repeat pattern yet."
+    elif total == 1:
+        why = f"2nd similar report here. Early repeat signal — {causes[0]}"
+    else:
+        why = f"{total+1} similar reports from same/nearby spot. Likely repeating cause: {causes[idx]}"
+    return {"same_area": same_area, "nearby": nearby, "total_repeat": total,
+            "why": why, "fix": AI_FIX.get(cat, AI_FIX["Other"]), "hotspot": hotspot}
+
+
+def ai_hotspots(db, min_count=2, radius_km=0.5):
+    """Group by (category, normalized area) + GPS clustering approx. Return list of hotspots."""
+    rows = db.execute("SELECT * FROM complaints ORDER BY id DESC").fetchall()
+    groups = {}
+    for r in rows:
+        key = (r["category"], normalize_area(r["area"]))
+        groups.setdefault(key, []).append(r)
+    spots = []
+    for (cat, anorm), items in groups.items():
+        if len(items) >= min_count:
+            causes = AI_CAUSES.get(cat, AI_CAUSES["Other"])
+            idx = min(len(items)-1, len(causes)-1)
+            spots.append({"category": cat, "area": items[0]["area"], "count": len(items),
+                          "ids": [x["id"] for x in items[:5]],
+                          "why": causes[idx], "fix": AI_FIX.get(cat, AI_FIX["Other"]),
+                          "latest": items[0]["created_at"]})
+    spots.sort(key=lambda x: x["count"], reverse=True)
+    return spots
+
+
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -301,7 +410,8 @@ def citizen_view_complaint(cid):
     if not c:
         flash("Complaint not found.", "danger")
         return redirect(url_for("citizen_dashboard"))
-    return render_template("view_complaint.html", c=c, is_engineer=False)
+    ai = ai_repeat_insight(db, c)
+    return render_template("view_complaint.html", c=c, is_engineer=False, ai=ai)
 
 
 # ---------- ENGINEER ----------
@@ -364,7 +474,17 @@ def engineer_view_complaint(cid):
     if not c:
         flash("Complaint not found.", "danger")
         return redirect(url_for("engineer_dashboard"))
-    return render_template("view_complaint.html", c=c, is_engineer=True, statuses=STATUSES)
+    ai = ai_repeat_insight(db, c)
+    return render_template("view_complaint.html", c=c, is_engineer=True, statuses=STATUSES, ai=ai)
+
+
+@app.route("/engineer/insights")
+@login_required
+@role_required("engineer")
+def engineer_insights():
+    db = get_db()
+    spots = ai_hotspots(db, min_count=2)
+    return render_template("insights.html", spots=spots)
 
 
 # ---------- ESP32 DEVICES (engineer only) ----------
