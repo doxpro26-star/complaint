@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Civic Complaints — quiet, fast, transparent{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<nav class="pillnav" aria-label="Primary">
+  <a class="mark" href="{{ url_for('home') }}">
+    <svg width="22" height="22" viewBox="0 0 29 29" fill="none" aria-hidden="true">
+      <circle cx="14.5" cy="14.5" r="14.5" fill="#fff"/>
+      <path d="M14.5 5.4c5 0 9.1 4.1 9.1 9.1s-4.1 9.1-9.1 9.1-9.1-4.1-9.1-9.1 4.1-9.1 9.1-9.1Zm0 5.6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" fill="#101318"/>
+    </svg>
+    CivicFix
+  </a>
+  <a href="{{ url_for('home') }}">Home</a>
+  {% if session.get('user_id') %}
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <span class="user-pill">{{ session.get('user_name') }} · {{ session.get('role') }}</span>
+    <a href="{{ url_for('logout') }}">Sign out</a>
+  {% else %}
+    <a href="{{ url_for('login') }}">Sign in</a>
+    <a class="reg" href="{{ url_for('register') }}">Sign up</a>
+  {% endif %}
+</nav>
+{% block hero %}{% endblock %}
+<div class="page-wrap">
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+<footer>CivicFix · Street Light & Civic Complaints · Flask + SQLite · Alderway-inspired theme</footer>
+</body>
+</html>

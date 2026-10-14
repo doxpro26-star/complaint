@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sign up — CivicFix{% endblock %}
+{% block content %}
+<div class="form-box">
+<p class="eyebrow" style="justify-content:flex-start">Join <b>&nbsp;CivicFix</b></p>
+<h2>Quiet start, no card needed</h2>
+<p class="muted">Create a citizen or engineer account. Instant access.</p>
+<form method="POST">
+  <label>Full Name</label>
+  <input name="name" required placeholder="e.g. Rahul Sharma">
+  <label>Email</label>
+  <input name="email" type="email" required placeholder="you@email.com">
+  <label>Password</label>
+  <input name="password" type="password" required placeholder="min 4 chars">
+  <label>Continue as</label>
+  <select name="role">
+    <option value="citizen">Citizen — raise complaints</option>
+    <option value="engineer">Engineer — resolve complaints</option>
+  </select>
+  <button class="btn btn-primary" type="submit" style="width:100%">Create account</button>
+</form>
+<p class="muted" style="margin-top:12px">Already have account? <a href="{{ url_for('login') }}" style="color:var(--accent);font-weight:600">Sign in</a></p>
+</div>
+{% endblock %}

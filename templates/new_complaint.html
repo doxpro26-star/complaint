@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}New Complaint — CivicFix{% endblock %}
+{% block content %}
+<div class="form-box">
+<p class="eyebrow" style="justify-content:flex-start">New <b>&nbsp;report</b></p>
+<h2>What needs fixing?</h2>
+<p class="muted">Takes 20 seconds. Engineer sees it instantly.</p>
+<form method="POST">
+  <label>Category</label>
+  <select name="category" required>
+    {% for cat in categories %}
+    <option value="{{ cat }}">{{ cat }}</option>
+    {% endfor %}
+  </select>
+  <label>Title</label>
+  <input name="title" required placeholder="e.g. Street light not working near bus stop">
+  <label>Area / Location</label>
+  <input name="area" required placeholder="e.g. Sector 5, MG Road, Ward 12">
+  <label>Description</label>
+  <textarea name="description" rows="4" required placeholder="Pole no., landmark, since when..."></textarea>
+  <button class="btn btn-primary" type="submit" style="width:100%">Submit — instant & private</button>
+</form>
+<p style="margin-top:12px"><a href="{{ url_for('citizen_dashboard') }}">← Back</a></p>
+</div>
+{% endblock %}

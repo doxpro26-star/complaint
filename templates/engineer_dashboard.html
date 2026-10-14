@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}All Complaints — Engineer{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <p class="eyebrow" style="justify-content:flex-start">Engineer · <b>&nbsp;{{ total }} total</b></p>
+    <h2>All Complaints</h2>
+  </div>
+</div>
+<div class="stats">
+  <div class="stat pending">Pending<b>{{ counts.get('Pending',0) }}</b></div>
+  <div class="stat progress">In Progress<b>{{ counts.get('In Progress',0) }}</b></div>
+  <div class="stat done">Completed<b>{{ counts.get('Completed',0) }}</b></div>
+</div>
+<form method="GET" class="filters-form">
+  <select name="status" onchange="this.form.submit()">
+    <option value="All" {% if status_filter=='All' %}selected{% endif %}>All Status</option>
+    {% for s in statuses %}
+    <option {% if status_filter==s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <select name="category" onchange="this.form.submit()">
+    <option value="All" {% if category_filter=='All' %}selected{% endif %}>All Categories</option>
+    {% for cat in categories %}
+    <option {% if category_filter==cat %}selected{% endif %}>{{ cat }}</option>
+    {% endfor %}
+  </select>
+</form>
+{% if complaints %}
+<table>
+<tr><th>ID</th><th>Category</th><th>Title</th><th>Citizen</th><th>Area</th><th>Status</th><th></th></tr>
+{% for c in complaints %}
+<tr>
+  <td>#{{ c['id'] }}</td>
+  <td>{{ c['category'] }}</td>
+  <td>{{ c['title'] }}</td>
+  <td>{{ c['citizen_name'] }}</td>
+  <td>{{ c['area'] }}</td>
+  <td><span class="badge {{ c['status']|lower|replace(' ','-') }}">{{ c['status'] }}</span></td>
+  <td><a href="{{ url_for('engineer_view_complaint', cid=c['id']) }}" style="color:var(--accent);font-weight:600">Open ›</a></td>
+</tr>
+{% endfor %}
+</table>
+{% else %}
+<div class="card"><p>Quiet for now — no complaints in this filter.</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}My Complaints — CivicFix{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <p class="eyebrow" style="justify-content:flex-start">Citizen · <b>&nbsp;live tracking</b></p>
+    <h2>My Complaints</h2>
+  </div>
+  <a href="{{ url_for('new_complaint') }}" class="btn btn-primary">+ New Complaint</a>
+</div>
+<div class="stats">
+  <div class="stat pending">Pending<b>{{ counts.get('Pending',0) }}</b></div>
+  <div class="stat progress">In Progress<b>{{ counts.get('In Progress',0) }}</b></div>
+  <div class="stat done">Completed<b>{{ counts.get('Completed',0) }}</b></div>
+</div>
+<div class="filters">
+  <a href="{{ url_for('citizen_dashboard') }}" class="chip {% if status_filter=='All' %}active{% endif %}">All</a>
+  {% for s in statuses %}
+  <a href="{{ url_for('citizen_dashboard', status=s) }}" class="chip {% if status_filter==s %}active{% endif %}">{{ s }}</a>
+  {% endfor %}
+</div>
+{% if complaints %}
+<table>
+<tr><th>ID</th><th>Category</th><th>Title</th><th>Area</th><th>Status</th><th>Date</th><th></th></tr>
+{% for c in complaints %}
+<tr>
+  <td>#{{ c['id'] }}</td>
+  <td>{{ c['category'] }}</td>
+  <td>{{ c['title'] }}</td>
+  <td>{{ c['area'] }}</td>
+  <td><span class="badge {{ c['status']|lower|replace(' ','-') }}">{{ c['status'] }}</span></td>
+  <td class="muted">{{ c['created_at'][:10] }}</td>
+  <td><a href="{{ url_for('citizen_view_complaint', cid=c['id']) }}" style="color:var(--accent);font-weight:600">View ›</a></td>
+</tr>
+{% endfor %}
+</table>
+{% else %}
+<div class="card"><p>No complaints yet. Click <b>+ New Complaint</b> — e.g. light not working in your street.</p></div>
+{% endif %}
+{% endblock %}

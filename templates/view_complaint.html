@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Complaint #{{ c['id'] }} — CivicFix{% endblock %}
+{% block content %}
+<div class="card detail">
+  <p class="eyebrow" style="justify-content:flex-start">{{ c['category'] }} · <b>&nbsp;#{{ c['id'] }}</b></p>
+  <h2 style="margin:8px 0">{{ c['title'] }}</h2>
+  <p><span class="badge {{ c['status']|lower|replace(' ','-') }}">{{ c['status'] }}</span>
+     <span class="chip">{{ c['category'] }}</span></p>
+  <p style="margin-top:10px"><b>Area:</b> {{ c['area'] }}</p>
+  <p style="margin-top:6px"><b>Description:</b><br>{{ c['description'] }}</p>
+  <p class="muted" style="margin-top:8px">Raised by {{ c['citizen_name'] }} on {{ c['created_at'] }} · Updated {{ c['updated_at'] }}</p>
+
+  <div class="remark-box">
+    <b>👷 Engineer Remark:</b>
+    <p>{{ c['remark'] if c['remark'] else 'No remark yet — engineer will explain why this happened here.' }}</p>
+  </div>
+
+  {% if is_engineer %}
+  <hr style="border:none;border-top:1px solid var(--line);margin:18px 0">
+  <h3>Update status & remark</h3>
+  <p class="muted">Be quiet, private and instant — like Alderway. Say what caused it.</p>
+  <form method="POST" class="form-box" style="box-shadow:none;max-width:100%;margin:10px 0;border:none;padding:0">
+    <label>Status</label>
+    <select name="status">
+      {% for s in statuses %}
+      <option {% if c['status']==s %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <label>Remark (why this happened / what was done)</label>
+    <textarea name="remark" rows="3" placeholder="e.g. Bulb fused due to voltage fluctuation, replaced today.">{{ c['remark'] }}</textarea>
+    <button class="btn btn-primary" type="submit">Save Update</button>
+  </form>
+  <a href="{{ url_for('engineer_dashboard') }}">← Back to all complaints</a>
+  {% else %}
+  <p style="margin-top:14px"><a href="{{ url_for('citizen_dashboard') }}">← Back to my complaints</a></p>
+  {% endif %}
+</div>
+{% endblock %}

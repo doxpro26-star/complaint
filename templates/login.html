@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign in — CivicFix{% endblock %}
+{% block content %}
+<div class="form-box">
+<p class="eyebrow" style="justify-content:flex-start">Welcome <b>&nbsp;back</b></p>
+<h2>Sign in instantly</h2>
+<p class="muted">Citizens track · Engineers resolve.</p>
+<form method="POST">
+  <label>Email</label>
+  <input name="email" type="email" required placeholder="you@email.com">
+  <label>Password</label>
+  <input name="password" type="password" required placeholder="••••">
+  <button class="btn btn-primary" type="submit" style="width:100%">Sign in</button>
+</form>
+<p class="muted" style="margin-top:12px">No account? <a href="{{ url_for('register') }}" style="color:var(--accent);font-weight:600">Sign up free</a></p>
+</div>
+{% endblock %}

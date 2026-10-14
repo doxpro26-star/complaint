@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}CivicFix — quiet, fast, transparent complaints{% endblock %}
+{% block hero %}
+<section class="stage">
+  <p class="eyebrow">An alternative to <b><span class="dot"></span>long queues & dark streets</b></p>
+  <h1>Quiet, fast, transparent<br>civic complaints</h1>
+  <p class="lede">Report a fused street light, broken road or water issue in your area — and watch it move to fixed, as it happens.</p>
+  <div class="cta">
+    {% if session.get('user_id') %}
+      <a class="btn btn-primary" href="{{ url_for('dashboard') }}">Go to Dashboard</a>
+      <a class="btn btn-quiet" href="{{ url_for('logout') }}">Sign out</a>
+    {% else %}
+      <a class="btn btn-primary" href="{{ url_for('register') }}">Raise a complaint — free</a>
+      <a class="btn btn-quiet" href="{{ url_for('login') }}">I'm an Engineer</a>
+    {% endif %}
+  </div>
+  <p class="fineprint">No fee to start · Pending → In Progress → Completed with engineer remarks</p>
+</section>
+
+<section class="showcase">
+  <div class="aw-card">
+    <div class="aw-top">
+      <span class="bolt">💡</span>
+      <span class="wsp">CivicFix Ward
+        <svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M3 5.6 6 2.4l3 3.2M3 8.4l3 3.2 3-3.2" stroke="#8b929c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="aw-chip" style="margin-left:auto">Today · All areas</span>
+    </div>
+
+    <div class="aw-stats">
+      <div class="aw-stat">
+        <div class="k">Total <i></i></div>
+        <div class="v">{{ total or 0 }}</div>
+        <div class="d">live tracking</div>
+      </div>
+      <div class="aw-stat">
+        <div class="k">Pending <i class="mute"></i></div>
+        <div class="v">{{ pending or 0 }}</div>
+        <div class="d dn">needs action</div>
+      </div>
+      <div class="aw-stat">
+        <div class="k">In Progress</div>
+        <div class="v">{{ inprog or 0 }}</div>
+        <div class="d">being fixed</div>
+      </div>
+      <div class="aw-stat">
+        <div class="k">Completed</div>
+        <div class="v">{{ done or 0 }}</div>
+        <div class="d">resolved</div>
+      </div>
+    </div>
+
+    <div class="aw-chart">
+      <svg viewBox="0 0 936 170" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="cfFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0e8271" stop-opacity=".18"/>
+            <stop offset="1" stop-color="#0e8271" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M10 130 C 80 98, 130 88, 190 93 C 250 98, 285 118, 350 127 C 415 136, 455 125, 510 107 C 575 86, 635 48, 705 39 C 722 37, 738 40, 752 45 L 752 170 L 10 170 Z" fill="#eef1f3"/>
+        <path d="M10 130 C 80 98, 130 88, 190 93 C 250 98, 285 118, 350 127 C 415 136, 455 125, 510 107 C 575 86, 635 48, 705 39 C 722 37, 738 40, 752 45" fill="none" stroke="#d6dbe0" stroke-width="2"/>
+        <path d="M10 150 C 75 130, 130 124, 190 125 C 260 126, 305 140, 370 143 C 430 146, 480 135, 540 129 C 600 123, 650 115, 705 112 L 752 112 L 752 170 L 10 170 Z" fill="url(#cfFill)"/>
+        <path d="M10 150 C 75 130, 130 124, 190 125 C 260 126, 305 140, 370 143 C 430 146, 480 135, 540 129 C 600 123, 650 115, 705 112" fill="none" stroke="#0e8271" stroke-width="2.5"/>
+      </svg>
+    </div>
+
+    <div class="aw-grid">
+      <div class="aw-mini">
+        <div class="hd"><b>{{ recent|length }} live</b><span class="sub">latest reports</span>
+          <span class="tag"><i style="width:7px;height:7px;border-radius:50%;background:#0e8271;display:block"></i>Live ›</span>
+        </div>
+        {% if recent %}
+          {% for c in recent %}
+          <div class="tbl-row"><span>#{{ c['id'] }} · {{ c['category'] }} — {{ c['title'][:32] }}</span><span class="n">{{ c['status'] }}</span></div>
+          {% endfor %}
+        {% else %}
+          <div class="tbl-row"><span>No complaints yet — be the first</span><span class="n">—</span></div>
+          <div class="tbl-row"><span>e.g. Street light not working, Sector 5</span><span class="n">Pending</span></div>
+        {% endif %}
+        <div class="spark" aria-hidden="true">
+          <i style="height:26%"></i><i style="height:34%"></i><i style="height:29%"></i><i style="height:41%"></i>
+          <i style="height:88%"></i><i style="height:47%"></i><i style="height:38%"></i><i style="height:33%"></i>
+          <i style="height:52%"></i><i style="height:96%"></i><i style="height:44%"></i><i style="height:37%"></i>
+        </div>
+      </div>
+      <div class="aw-mini">
+        <div class="hd"><b>Resolution score</b>
+          <span class="tag">Engineer remarks ›</span>
+        </div>
+        <div class="score">
+          <div class="ring"><span>{% if total %}{{ (done*100//total) if total else 0 }}{% else %}–{% endif %}</span></div>
+          <div class="txt">
+            <b>{% if total %}Transparent by design{% else %}Ready when you are{% endif %}</b>
+            <p>Every status change carries a remark explaining why it happened.</p>
+          </div>
+        </div>
+        <div class="tbl-row"><span>Street Light</span><span class="n">most reported</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="toolbar">▲ ● ▭ ◉ <span class="live">◉ {{ pending or 0 }} live</span> · Pending → In Progress → Completed</div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="how3">
+  <h2>From dark street to fixed, quietly.</h2>
+  <p class="sub">Citizens report · Engineers resolve with remarks · Everyone sees the same truth.</p>
+</div>
+<div class="grid3">
+  <div class="card"><h3>🧑 Citizen</h3><p class="muted">Sign up, pick Street Light / Water / Road / Garbage / Drainage, add area + description. Track live.</p></div>
+  <div class="card"><h3>👷 Engineer</h3><p class="muted">See every complaint, filter by status, set Pending / In Progress / Completed + remark why.</p></div>
+  <div class="card"><h3>📊 Proof</h3><p class="muted">Counts, recent reports and resolution score update instantly — no calls, no queues.</p></div>
+</div>
+<div style="text-align:center;margin:10px 0 20px">
+  <a href="{{ url_for('register') }}" class="btn btn-primary">Start free — no card needed</a>
+</div>
+{% endblock %}
