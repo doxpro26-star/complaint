@@ -2,10 +2,10 @@
 {% block title %}New Complaint — CivicFix{% endblock %}
 {% block content %}
 <div class="form-box">
-<p class="eyebrow" style="justify-content:flex-start">New <b>&nbsp;report</b></p>
+<p class="eyebrow" style="justify-content:flex-start">New <b>&nbsp;report + photo + GPS</b></p>
 <h2>What needs fixing?</h2>
-<p class="muted">Takes 20 seconds. Engineer sees it instantly.</p>
-<form method="POST">
+<p class="muted">Snap a photo, capture live location, engineer sees it instantly.</p>
+<form method="POST" enctype="multipart/form-data">
   <label>Category</label>
   <select name="category" required>
     {% for cat in categories %}
@@ -14,12 +14,60 @@
   </select>
   <label>Title</label>
   <input name="title" required placeholder="e.g. Street light not working near bus stop">
-  <label>Area / Location</label>
-  <input name="area" required placeholder="e.g. Sector 5, MG Road, Ward 12">
+  <label>Area / Location (text)</label>
+  <input name="area" id="areaInput" required placeholder="e.g. Sector 5, MG Road, Ward 12">
+
+  <label>📷 Photo proof (upload or take photo)</label>
+  <input type="file" name="photo" id="photoInput" accept="image/*" capture="environment">
+  <p class="muted">On mobile this opens camera directly. Max 5 MB (png/jpg/webp).</p>
+  <img id="photoPreview" style="display:none;max-width:100%;border-radius:11px;margin-top:8px;border:1px solid var(--line)">
+
+  <label>📍 Real-time location</label>
+  <div class="card" style="padding:12px">
+    <p class="muted" id="locStatus">Not captured yet. Tap below.</p>
+    <p id="locText" style="font-weight:600"></p>
+    <a id="locMapLink" href="#" target="_blank" style="display:none;color:var(--accent);font-weight:600">Open in Google Maps ›</a>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button type="button" class="btn btn-quiet" onclick="captureLocation()">📍 Use my live location</button>
+    </div>
+  </div>
+  <input type="hidden" name="latitude" id="latInput">
+  <input type="hidden" name="longitude" id="lngInput">
+
   <label>Description</label>
   <textarea name="description" rows="4" required placeholder="Pole no., landmark, since when..."></textarea>
-  <button class="btn btn-primary" type="submit" style="width:100%">Submit — instant & private</button>
+  <button class="btn btn-primary" type="submit" style="width:100%">Submit with photo & location</button>
 </form>
 <p style="margin-top:12px"><a href="{{ url_for('citizen_dashboard') }}">← Back</a></p>
 </div>
+<script>
+// Photo preview
+document.getElementById('photoInput').addEventListener('change', function(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const img = document.getElementById('photoPreview');
+  img.src = URL.createObjectURL(f);
+  img.style.display = 'block';
+});
+// Live GPS
+function captureLocation(){
+  const st = document.getElementById('locStatus');
+  if(!navigator.geolocation){ st.textContent = 'Geolocation not supported.'; return; }
+  st.textContent = 'Locating… allow location permission…';
+  navigator.geolocation.getCurrentPosition(function(pos){
+    const lat = pos.coords.latitude.toFixed(6);
+    const lng = pos.coords.longitude.toFixed(6);
+    document.getElementById('latInput').value = lat;
+    document.getElementById('lngInput').value = lng;
+    document.getElementById('locText').textContent = '📌 ' + lat + ', ' + lng + ' (±' + Math.round(pos.coords.accuracy) + 'm)';
+    st.textContent = '✅ Live location captured!';
+    st.style.color = 'var(--pos)';
+    const link = document.getElementById('locMapLink');
+    link.href = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+    link.style.display = 'inline';
+  }, function(err){
+    st.textContent = '❌ ' + err.message + ' — you can still submit without GPS.';
+  }, {enableHighAccuracy:true, timeout:10000});
+}
+</script>
 {% endblock %}

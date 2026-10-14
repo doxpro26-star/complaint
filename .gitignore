@@ -8,3 +8,5 @@ instance/
 .venv/
 venv/
 .env
+static/uploads/*
+!static/uploads/.gitkeep

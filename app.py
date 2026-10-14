@@ -18,6 +18,11 @@ START_TIME = time.time()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE = os.path.join(BASE_DIR, "complaints.db")
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 CATEGORIES = ["Street Light", "Water Supply", "Road Damage", "Garbage", "Drainage", "Other"]
 STATUSES = ["Pending", "In Progress", "Completed"]
@@ -59,13 +64,28 @@ def init_db():
             area TEXT NOT NULL,
             status TEXT NOT NULL DEFAULT 'Pending',
             remark TEXT DEFAULT '',
+            image_path TEXT DEFAULT '',
+            latitude REAL DEFAULT NULL,
+            longitude REAL DEFAULT NULL,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             FOREIGN KEY (citizen_id) REFERENCES users(id)
         )
     """)
+    # Migrate old DBs missing new columns
+    cols = [r[1] for r in db.execute("PRAGMA table_info(complaints)").fetchall()]
+    if "image_path" not in cols:
+        db.execute("ALTER TABLE complaints ADD COLUMN image_path TEXT DEFAULT ''")
+    if "latitude" not in cols:
+        db.execute("ALTER TABLE complaints ADD COLUMN latitude REAL DEFAULT NULL")
+    if "longitude" not in cols:
+        db.execute("ALTER TABLE complaints ADD COLUMN longitude REAL DEFAULT NULL")
     db.commit()
     db.close()
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def login_required(f):
@@ -210,10 +230,14 @@ def citizen_dashboard():
 @role_required("citizen")
 def new_complaint():
     if request.method == "POST":
+        import uuid
+        from werkzeug.utils import secure_filename
         category = request.form.get("category", "")
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
         area = request.form.get("area", "").strip()
+        lat_raw = request.form.get("latitude", "").strip()
+        lng_raw = request.form.get("longitude", "").strip()
 
         if category not in CATEGORIES:
             flash("Please select a valid category.", "danger")
@@ -222,16 +246,34 @@ def new_complaint():
             flash("Title, description and area are required.", "danger")
             return render_template("new_complaint.html", categories=CATEGORIES)
 
+        try:
+            latitude = float(lat_raw) if lat_raw else None
+            longitude = float(lng_raw) if lng_raw else None
+        except ValueError:
+            latitude, longitude = None, None
+
+        # Photo upload / take photo (mobile camera via capture attr in form)
+        image_path = ""
+        photo = request.files.get("photo")
+        if photo and photo.filename:
+            if not allowed_file(photo.filename):
+                flash("Photo must be png/jpg/jpeg/gif/webp.", "danger")
+                return render_template("new_complaint.html", categories=CATEGORIES)
+            ext = photo.filename.rsplit(".", 1)[1].lower()
+            fname = f"{uuid.uuid4().hex}.{ext}"
+            photo.save(os.path.join(app.config["UPLOAD_FOLDER"], secure_filename(fname)))
+            image_path = f"uploads/{fname}"
+
         now = datetime.now().isoformat(timespec="seconds")
         db = get_db()
         db.execute(
             """INSERT INTO complaints
-               (citizen_id, category, title, description, area, status, remark, created_at, updated_at)
-               VALUES (?,?,?,?,?,'Pending','',?,?)""",
-            (session["user_id"], category, title, description, area, now, now),
+               (citizen_id, category, title, description, area, status, remark, image_path, latitude, longitude, created_at, updated_at)
+               VALUES (?,?,?,?,?,'Pending','',?,?,?, ?,?)""",
+            (session["user_id"], category, title, description, area, image_path, latitude, longitude, now, now),
         )
         db.commit()
-        flash("Complaint submitted successfully!", "success")
+        flash("Complaint submitted successfully with photo & location!", "success")
         return redirect(url_for("citizen_dashboard"))
 
     return render_template("new_complaint.html", categories=CATEGORIES)
