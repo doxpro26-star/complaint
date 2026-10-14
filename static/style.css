@@ -65,11 +65,24 @@ img{max-width:100%;display:block}
 .page-wrap{padding:110px 24px 40px;max-width:980px;margin:0 auto;min-height:70vh}
 .container{max-width:980px;margin:0 auto}
 
-/* ---- Alderway hero stage ---- */
+/* ---- Alderway hero stage (with light blueprint grid) ---- */
 .stage{
-  position:relative;background:var(--paper);
+  position:relative;
+  background-color:#fbfcfe;
+  background-image:
+    linear-gradient(to right, rgba(43,78,140,.10) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(43,78,140,.10) 1px, transparent 1px);
+  background-size:56px 56px;
+  background-position:center top;
   padding:155px 24px 51px;text-align:center;
+  overflow:hidden;
 }
+.stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 90% 75% at 50% 30%, rgba(255,255,255,.55) 0%, rgba(255,255,255,0) 60%),
+             linear-gradient(180deg, rgba(255,255,255,.4) 0%, rgba(255,255,255,0) 25%, rgba(255,255,255,0) 75%, rgba(251,252,254,.9) 100%);
+}
+.stage > *{position:relative;z-index:1}
 .eyebrow{
   font-size:15px;line-height:22px;color:var(--ink-3);
   display:flex;align-items:center;justify-content:center;gap:6px;
