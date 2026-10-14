@@ -80,6 +80,16 @@ def init_db():
         db.execute("ALTER TABLE complaints ADD COLUMN latitude REAL DEFAULT NULL")
     if "longitude" not in cols:
         db.execute("ALTER TABLE complaints ADD COLUMN longitude REAL DEFAULT NULL")
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS esp_devices (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            ip TEXT NOT NULL,
+            area TEXT DEFAULT '',
+            added_by INTEGER,
+            created_at TEXT NOT NULL
+        )
+    """)
     db.commit()
     db.close()
 
@@ -355,6 +365,74 @@ def engineer_view_complaint(cid):
         flash("Complaint not found.", "danger")
         return redirect(url_for("engineer_dashboard"))
     return render_template("view_complaint.html", c=c, is_engineer=True, statuses=STATUSES)
+
+
+# ---------- ESP32 DEVICES (engineer only) ----------
+def clean_esp_ip(raw):
+    """Accept '192.168.1.50', '192.168.1.50:80', or full URL. Return host[:port] or None."""
+    import re
+    if not raw:
+        return None
+    s = raw.strip()
+    s = re.sub(r"^https?://", "", s, flags=re.I)
+    s = s.split("/")[0].strip()
+    # IPv4 + optional port, or mDNS/hostname + optional port
+    if re.match(r"^(\d{1,3}\.){3}\d{1,3}(:\d{1,5})?$", s):
+        parts = s.split(":")[0].split(".")
+        if all(0 <= int(p) <= 255 for p in parts):
+            return s
+        return None
+    if re.match(r"^[a-zA-Z0-9_.-]+(:\d{1,5})?$", s):
+        return s
+    return None
+
+
+@app.route("/engineer/devices", methods=["GET", "POST"])
+@login_required
+@role_required("engineer")
+def esp_devices():
+    db = get_db()
+    if request.method == "POST":
+        name = request.form.get("name", "").strip() or "Street Light Controller"
+        ip_raw = request.form.get("ip", "")
+        area = request.form.get("area", "").strip()
+        ip = clean_esp_ip(ip_raw)
+        if not ip:
+            flash("Enter a valid ESP32 IP, e.g. 192.168.1.50 or 192.168.1.50:80", "danger")
+        else:
+            db.execute(
+                "INSERT INTO esp_devices (name, ip, area, added_by, created_at) VALUES (?,?,?,?,?)",
+                (name, ip, area, session["user_id"], datetime.now().isoformat(timespec="seconds")),
+            )
+            db.commit()
+            flash(f"ESP32 {ip} saved! Click Open to go to its webserver.", "success")
+        return redirect(url_for("esp_devices"))
+    devices = db.execute("SELECT * FROM esp_devices ORDER BY id DESC").fetchall()
+    return render_template("esp_devices.html", devices=devices)
+
+
+@app.route("/engineer/devices/<int:did>/delete", methods=["POST"])
+@login_required
+@role_required("engineer")
+def esp_device_delete(did):
+    db = get_db()
+    db.execute("DELETE FROM esp_devices WHERE id=?", (did,))
+    db.commit()
+    flash("Device removed.", "info")
+    return redirect(url_for("esp_devices"))
+
+
+@app.route("/engineer/devices/<int:did>/open")
+@login_required
+@role_required("engineer")
+def esp_device_open(did):
+    """Directly goes to the ESP32 webserver."""
+    db = get_db()
+    d = db.execute("SELECT * FROM esp_devices WHERE id=?", (did,)).fetchone()
+    if not d:
+        flash("Device not found.", "danger")
+        return redirect(url_for("esp_devices"))
+    return redirect(f"http://{d['ip']}/")
 
 
 @app.route("/healthz")

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}ESP32 Devices — Engineer{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <p class="eyebrow" style="justify-content:flex-start">Engineer · <b>&nbsp;ESP32 controllers</b></p>
+    <h2>🔌 ESP32 Devices</h2>
+    <p class="muted">Insert the IP shown by your ESP32 (Serial Monitor / OLED), save, then jump straight to its webserver.</p>
+  </div>
+  <a href="{{ url_for('engineer_dashboard') }}" class="btn btn-quiet">← Complaints</a>
+</div>
+
+<div class="form-box" style="max-width:100%">
+  <h3 style="margin:0 0 6px">+ Add ESP32</h3>
+  <form method="POST" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div>
+      <label>Name</label>
+      <input name="name" placeholder="e.g. Sector 5 Pole Controller" required>
+    </div>
+    <div>
+      <label>ESP32 IP address *</label>
+      <input name="ip" id="ipInput" placeholder="e.g. 192.168.1.50" required pattern=".*\..*">
+    </div>
+    <div style="grid-column:1/-1">
+      <label>Area</label>
+      <input name="area" placeholder="e.g. Sector 5, MG Road">
+    </div>
+    <div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary" type="submit">Save IP</button>
+      <button class="btn btn-quiet" type="button" onclick="quickOpen()">Open typed IP directly →</button>
+    </div>
+  </form>
+  <p class="muted" style="margin-top:8px">Tip: ESP32 + phone/laptop must be on the same Wi-Fi. If it shows <code>192.168.4.1</code>, connect to the ESP32 AP first.</p>
+</div>
+
+{% if devices %}
+<table style="margin-top:14px">
+<tr><th>#</th><th>Name</th><th>IP</th><th>Area</th><th>Webserver</th><th></th></tr>
+{% for d in devices %}
+<tr>
+  <td>{{ d['id'] }}</td>
+  <td>{{ d['name'] }}</td>
+  <td><code>http://{{ d['ip'] }}/</code></td>
+  <td>{{ d['area'] }}</td>
+  <td>
+    <a class="btn btn-primary" style="margin-top:0" href="http://{{ d['ip'] }}/" target="_blank" rel="noopener">Open →</a>
+    <a href="{{ url_for('esp_device_open', did=d['id']) }}" class="chip">redirect</a>
+  </td>
+  <td>
+    <form method="POST" action="{{ url_for('esp_device_delete', did=d['id']) }}" onsubmit="return confirm('Remove this device?')">
+      <button class="btn btn-quiet" style="margin-top:0" type="submit">Delete</button>
+    </form>
+  </td>
+</tr>
+{% endfor %}
+</table>
+{% else %}
+<div class="card" style="margin-top:14px"><p>No ESP32 saved yet. Paste the IP from Serial Monitor above.</p></div>
+{% endif %}
+
+<script>
+function quickOpen(){
+  let v = document.getElementById('ipInput').value.trim()
+    .replace(/^https?:\/\//i,'').split('/')[0];
+  if(!v || v.indexOf('.') < 0){ alert('Type the ESP32 IP first, e.g. 192.168.1.50'); return; }
+  window.open('http://' + v + '/', '_blank');
+}
+</script>
+{% endblock %}
