@@ -5,13 +5,16 @@ Stack: Flask + SQLite
 """
 import os
 import sqlite3
+import time
 from datetime import datetime
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "complaint-system-secret-key-change-this")
+
+START_TIME = time.time()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE = os.path.join(BASE_DIR, "complaints.db")
@@ -314,7 +317,27 @@ def engineer_view_complaint(cid):
 
 @app.route("/healthz")
 def healthz():
-    return "ok", 200
+    """UptimeRobot pings this every 5 min to keep Render free tier awake.
+    Returns 200 + JSON so monitors can check keyword 'ok'."""
+    uptime = int(time.time() - START_TIME)
+    try:
+        db = sqlite3.connect(DATABASE)
+        db.execute("SELECT 1").fetchone()
+        db.close()
+        db_status = "ok"
+    except Exception as e:
+        db_status = f"error: {e}"
+    return jsonify(status="ok", uptime_seconds=uptime, db=db_status), 200
+
+
+@app.route("/status")
+def status():
+    """Public status page (human-friendly) for UptimeRobot concept demo."""
+    uptime = int(time.time() - START_TIME)
+    hrs, rem = divmod(uptime, 3600)
+    mins, secs = divmod(rem, 60)
+    return render_template("status.html", uptime_seconds=uptime,
+                           uptime_str=f"{hrs}h {mins}m {secs}s")
 
 
 if __name__ == "__main__":

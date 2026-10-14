@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Status — CivicFix{% endblock %}
+{% block content %}
+<div class="card detail" style="text-align:center">
+  <p class="eyebrow" style="justify-content:center">UptimeRobot · <b>&nbsp;live</b></p>
+  <h2 style="margin:8px 0">🟢 All systems normal</h2>
+  <p class="muted">This page proves the app is awake. UptimeRobot pings <code>/healthz</code> every 5 minutes.</p>
+  <div class="stats" style="margin-top:16px">
+    <div class="stat progress">Uptime<b style="font-size:16px">{{ uptime_str }}</b></div>
+    <div class="stat done">Health<b>OK</b></div>
+    <div class="stat pending">Seconds<b>{{ uptime_seconds }}</b></div>
+  </div>
+  <p style="margin-top:12px"><code>/healthz</code> → JSON <code>{"status":"ok"}</code> · keyword monitor: <b>ok</b></p>
+  <p style="margin-top:12px"><a href="{{ url_for('home') }}" class="btn btn-primary">← Back home</a></p>
+</div>
+{% endblock %}

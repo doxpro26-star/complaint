@@ -16,6 +16,7 @@
     CivicFix
   </a>
   <a href="{{ url_for('home') }}">Home</a>
+  <a href="{{ url_for('status') }}">Status</a>
   {% if session.get('user_id') %}
     <a href="{{ url_for('dashboard') }}">Dashboard</a>
     <span class="user-pill">{{ session.get('user_name') }} · {{ session.get('role') }}</span>
